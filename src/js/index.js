@@ -36,9 +36,28 @@ function _renderProducts(products, container) {
 }
 
 async function _editProduct(id) {
-    const product = products.find(prod => prod.id === id);
-    document.getElementById('edit-nome').value = product.title;
-    document.getElementById('edit-preco').value = product.price;
+    const produtoSendoEditado = products.find(prod => prod.id === id);
+    // Preenche o cabeçalho e a imagem
+    document.getElementById('modal-titulo-nome').innerText = produtoSendoEditado.title;
+    document.getElementById('edit-img-preview').src = produtoSendoEditado.image;
+
+    // Preenche campos de texto
+    document.getElementById('edit-nome').value = produtoSendoEditado.title;
+    document.getElementById('edit-preco').value = produtoSendoEditado.price;
+    document.getElementById('edit-desc').value = produtoSendoEditado.description;
+
+    // Marca o radio button da categoria correta
+    const radios = document.getElementsByName('edit-categoria');
+    for (let radio of radios) {
+        if (radio.value === produtoSendoEditado.category) {
+            radio.checked = true;
+            break;
+        }
+    }
+}
+
+function saveEdit(product) {
+
 }
 
 function _createNewCardProduct(product) {
