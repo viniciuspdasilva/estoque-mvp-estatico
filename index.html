@@ -20,28 +20,17 @@
         <a class="navbar-brand fw-bold" href="#">
             <i class="bi bi-box-seam me-2"></i>FastShop Estoque
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <div class="d-flex align-items-center gap-3">
-                <form class="d-flex" role="search">
-                    <input class="form-control form-control-sm me-2" type="search" placeholder="Buscar produto..."
-                           aria-label="Search">
-                    <button class="btn btn-outline-light btn-sm" type="submit"><i class="bi bi-search"></i></button>
-                </form>
-
-                <!-- Indicador visual do estoque local -->
-                <button class="btn btn-primary btn-sm position-relative">
-                    <i class="bi bi-inboxes"></i> Itens
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                          id="contador-estoque">
-                            0
-                        </span>
-                </button>
-            </div>
+        <div class="d-flex align-items-center gap-3">
+            <form class="d-flex" role="search" onsubmit="event.preventDefault();">
+                <input class="form-control form-control-sm me-2" type="search" placeholder="Buscar produto..." id="input-busca"
+                       aria-label="Search">
+            </form>
         </div>
+
+        <div class="d-flex align-items-center gap-3">
+            <button class="btn btn-outline-light btn-sm" onclick="syncStockGlobal()" id="btn-refresh" type="submit"><i class="bi bi-arrow-clockwise"></i></button>
+        </div>
+
     </div>
 </nav>
 
@@ -53,10 +42,11 @@
         <h2 class="h4 mb-0 text-secondary" id="titulo-secao">Produtos Disponíveis</h2>
 
         <!-- Botões de Categoria (O JS pode gerar isso dinamicamente depois) -->
-        <div class="btn-group" role="group" aria-label="Filtro de Categorias">
-            <button type="button" class="btn btn-outline-secondary btn-sm active">Todos</button>
-            <button type="button" class="btn btn-outline-secondary btn-sm">Eletrônicos</button>
-            <button type="button" class="btn btn-outline-secondary btn-sm">Roupas</button>
+        <div class="btn-group" id="filtro-categorias" role="group" aria-label="Filtro de Categorias">
+            <button type="button" class="btn btn-outline-secondary btn-sm active" onclick="filtrarPorCategoria('todos', this)">Todos</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="filtrarPorCategoria('electronics', this)">Eletrônicos</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="filtrarPorCategoria('clothing', this)">Roupas</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="filtrarPorCategoria('jewelery', this)">Joias</button>
         </div>
     </div>
 
@@ -77,6 +67,9 @@
 
             <div class="modal-body">
                 <form id="formEditarProduto">
+                    <input type="hidden" id="edit-id" name="id">
+                    <input type="hidden" id="edit-rating-rate" name="rating-rate">
+                    <input type="hidden" id="edit-rating-count" name="rating-count">
                     <!-- Linha 1: Imagem + Nome + Preços -->
                     <div class="row mb-3">
                         <!-- Coluna da Imagem -->
@@ -155,6 +148,54 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- Modal de Confirmação de Exclusão -->
+<div class="modal fade" id="modalExcluirProduto" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-danger">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirmar Exclusão</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="fs-5 mb-4">Tem certeza que deseja remover este produto do estoque?</p>
+
+                <!-- Mini card para exibir o produto que será apagado -->
+                <div class="card mx-auto shadow-sm border-0 bg-light" style="max-width: 250px;">
+                    <img id="del-img-preview" src="" class="card-img-top p-2 mx-auto" style="height: 120px; width: auto; object-fit: contain;" alt="Imagem">
+                    <div class="card-body py-2">
+                        <h6 class="card-title text-truncate mb-1" id="del-nome">Nome</h6>
+                        <p class="card-text text-success fw-bold mb-0" id="del-preco">R$ 0,00</p>
+                    </div>
+                </div>
+
+                <p class="text-muted mt-3 mb-0" style="font-size: 0.85rem;">Esta ação apagará o item do banco de dados permanentemente.</p>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="confirmarExclusao()">
+                    <i class="bi bi-trash me-1"></i> Sim, Remover
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Container de Toasts flutuantes -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+
+    <!-- Toast de Sucesso -->
+    <div id="toastSucesso" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <span id="toast-mensagem">Ação realizada com sucesso!</span>
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Fechar"></button>
+        </div>
+    </div>
+
 </div>
 <!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>

@@ -14,10 +14,11 @@
  * @property {string} description - A descrição detalhada do produto
  * @property {string} category - A categoria do produto
  * @property {string} image - A URL da imagem do produto
+ * @property {number} stock - A quantidade em estoque do produto
  * @property {Rating} rating - O objeto de avaliação do produto
  */
 
-const URL_API = "http://localhost:8000/products/";
+const URL_API = "http://localhost:8000/products";
 
 /**
  * Função genérica para tratar as respostas do fetch e capturar erros HTTP.
@@ -56,6 +57,21 @@ async function getProducts() {
     }
 }
 
+async function syncGlobalStorage() {
+    try {
+        const response = await fetch(`${URL_API}/sync`, {
+            method: "GET",
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        return await handleResponse(response);
+    } catch (error) {
+        console.error("Erro ao buscar produtos:", error);
+        throw error;
+    }
+}
+
 /**
  * Busca um produto específico pelo seu ID.
  * 
@@ -65,7 +81,7 @@ async function getProducts() {
  */
 async function getProductById(id) {
     try {
-        const response = await fetch(`${URL_API}${id}`, {
+        const response = await fetch(`${URL_API}/${id}`, {
             method: "GET",
             headers: {
                 'Content-Type': 'application/json'
@@ -111,7 +127,7 @@ async function addProduct(product) {
  */
 async function updateProduct(idProduct, product) {
     try {
-        const response = await fetch(`${URL_API}${idProduct}`, {
+        const response = await fetch(`${URL_API}/${idProduct}`, {
             method: "PUT",
             headers: {
                 'Content-Type': 'application/json'
@@ -134,13 +150,16 @@ async function updateProduct(idProduct, product) {
  */
 async function deleteProduct(idProduct) {
     try {
-        const response = await fetch(`${URL_API}${idProduct}`, {
+        const response = await fetch(`${URL_API}/${idProduct}`, {
             method: "DELETE",
             headers: {
                 'Content-Type': 'application/json'
             }
         });
-        return await handleResponse(response);
+        if (!response.ok) {
+            throw new Error(`Erro ao remover produto: ${response.status} - ${response.statusText}`);
+        }
+        return;
     } catch (error) {
         console.error("Erro ao remover produto:", error);
         throw error;

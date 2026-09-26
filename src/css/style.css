@@ -1,0 +1,17 @@
+:root {
+    /* Muda a cor "Primary" do Bootstrap (botões e links) para Chumbo Escuro */
+    --bs-primary: #212529;
+    --bs-primary-rgb: 33, 37, 41;
+
+    /* Muda a cor de fundo geral da página */
+    --bs-body-bg: #f3f4f6;
+
+    /* Suaviza o verde de sucesso (Preços) */
+    --bs-success: #10b981;
+}
+
+/* Deixa os botões primários com bordas mais modernas (levemente arredondadas) */
+.btn-primary {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
